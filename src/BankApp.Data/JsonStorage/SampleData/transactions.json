@@ -1,0 +1,44 @@
+[
+  {
+    "id": "txn-001",
+    "transactionType": 1,
+    "amount": 500.00,
+    "sourceAccount": "",
+    "destinationAccount": "1000001",
+    "status": 1,
+    "dateCreated": "2024-01-15T10:30:00.000Z",
+    "description": "Initial deposit",
+    "balanceAfterTransaction": 500.00,
+    "initiator": "System",
+    "channel": "ATM",
+    "referenceNumber": "ref-001"
+  },
+  {
+    "id": "txn-002",
+    "transactionType": 1,
+    "amount": 1000.00,
+    "sourceAccount": "",
+    "destinationAccount": "1000001",
+    "status": 1,
+    "dateCreated": "2024-01-16T09:15:00.000Z",
+    "description": "Salary deposit",
+    "balanceAfterTransaction": 1500.00,
+    "initiator": "System",
+    "channel": "Online",
+    "referenceNumber": "ref-002"
+  },
+  {
+    "id": "txn-003",
+    "transactionType": 1,
+    "amount": 5000.00,
+    "sourceAccount": "",
+    "destinationAccount": "1000002",
+    "status": 1,
+    "dateCreated": "2024-01-16T14:20:00.000Z",
+    "description": "Initial deposit",
+    "balanceAfterTransaction": 5000.00,
+    "initiator": "System",
+    "channel": "Branch",
+    "referenceNumber": "ref-003"
+  }
+] 

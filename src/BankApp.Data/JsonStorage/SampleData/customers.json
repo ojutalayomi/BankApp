@@ -1,0 +1,44 @@
+[
+  {
+    "name": "John Doe",
+    "gender": 0,
+    "age": 30,
+    "dateOfBirth": "1994-05-15T00:00:00.000Z",
+    "nationality": "American",
+    "maritalStatus": 1,
+    "phoneNumber": "555-123-4567",
+    "address": "123 Main St, New York, NY 10001",
+    "account": {
+      "accountName": "John Doe's Current Account",
+      "accountNumber": "1000001",
+      "accountType": 0,
+      "accountBalance": 1500.00,
+      "transactionHistory": [],
+      "dateCreated": "2024-01-15T10:30:00.000Z",
+      "isFrozen": false
+    },
+    "complaints": [],
+    "transactions": []
+  },
+  {
+    "name": "Jane Smith",
+    "gender": 1,
+    "age": 28,
+    "dateOfBirth": "1996-08-22T00:00:00.000Z",
+    "nationality": "Canadian",
+    "maritalStatus": 0,
+    "phoneNumber": "555-987-6543",
+    "address": "456 Oak Ave, Toronto, ON M5V 2H1",
+    "account": {
+      "accountName": "Jane Smith's Saving Account",
+      "accountNumber": "1000002",
+      "accountType": 1,
+      "accountBalance": 5000.00,
+      "transactionHistory": [],
+      "dateCreated": "2024-01-16T14:20:00.000Z",
+      "isFrozen": false
+    },
+    "complaints": [],
+    "transactions": []
+  }
+] 

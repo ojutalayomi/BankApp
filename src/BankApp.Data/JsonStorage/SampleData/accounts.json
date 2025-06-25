@@ -1,0 +1,20 @@
+[
+  {
+    "accountName": "John Doe's Current Account",
+    "accountNumber": "1000001",
+    "accountType": 0,
+    "accountBalance": 1500.00,
+    "transactionHistory": [],
+    "dateCreated": "2024-01-15T10:30:00.000Z",
+    "isFrozen": false
+  },
+  {
+    "accountName": "Jane Smith's Saving Account",
+    "accountNumber": "1000002",
+    "accountType": 1,
+    "accountBalance": 5000.00,
+    "transactionHistory": [],
+    "dateCreated": "2024-01-16T14:20:00.000Z",
+    "isFrozen": false
+  }
+] 
