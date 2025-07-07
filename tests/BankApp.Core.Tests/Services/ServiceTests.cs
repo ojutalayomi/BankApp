@@ -13,32 +13,35 @@ public class ServiceTests
     public void AccountService_Deposit_ShouldIncreaseBalance()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var account = new Account("Test Account", AccountType.Current);
-        mockRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
-        mockRepo.Setup(r => r.Update(It.IsAny<Account>())).Callback<Account>(a => account = a);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var account = new Account("Test Account", AccountType.Current, "1234");
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
+        mockAccountRepo.Setup(r => r.Update(It.IsAny<Account>())).Callback<Account>(a => account = a);
+        mockTransactionRepo.Setup(r => r.Add(It.IsAny<Transaction>()));
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act
         service.Deposit(account.AccountNumber, 100.00m);
 
         // Assert
         Assert.Equal(100.00m, account.AccountBalance);
-        Assert.Single(account.TransactionHistory);
-        Assert.Equal(TransactionType.Deposit, account.TransactionHistory[0].TransactionType);
+        Assert.Single(account.TransactionIds);
+        mockTransactionRepo.Verify(r => r.Add(It.IsAny<Transaction>()), Times.Once);
     }
 
     [Fact]
     public void AccountService_Deposit_ShouldThrowExceptionForFrozenAccount()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var account = new Account("Test Account", AccountType.Current);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var account = new Account("Test Account", AccountType.Current, "1234");
         account.FreezeAccount();
-        mockRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => 
@@ -50,11 +53,12 @@ public class ServiceTests
     public void AccountService_Deposit_ShouldThrowExceptionForNegativeAmount()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var account = new Account("Test Account", AccountType.Current);
-        mockRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var account = new Account("Test Account", AccountType.Current, "1234");
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
@@ -66,33 +70,36 @@ public class ServiceTests
     public void AccountService_Withdraw_ShouldDecreaseBalance()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var account = new Account("Test Account", AccountType.Current);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var account = new Account("Test Account", AccountType.Current, "1234");
         account.Deposit(200.00m); // Add initial balance
-        mockRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
-        mockRepo.Setup(r => r.Update(It.IsAny<Account>())).Callback<Account>(a => account = a);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
+        mockAccountRepo.Setup(r => r.Update(It.IsAny<Account>())).Callback<Account>(a => account = a);
+        mockTransactionRepo.Setup(r => r.Add(It.IsAny<Transaction>()));
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act
         service.Withdraw(account.AccountNumber, 50.00m);
 
         // Assert
         Assert.Equal(150.00m, account.AccountBalance);
-        Assert.Equal(2, account.TransactionHistory.Count);
-        Assert.Equal(TransactionType.Withdraw, account.TransactionHistory[1].TransactionType);
+        Assert.Equal(2, account.TransactionIds.Count);
+        mockTransactionRepo.Verify(r => r.Add(It.IsAny<Transaction>()), Times.Once);
     }
 
     [Fact]
     public void AccountService_Withdraw_ShouldThrowExceptionForInsufficientFunds()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var account = new Account("Test Account", AccountType.Current);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var account = new Account("Test Account", AccountType.Current, "1234");
         account.Deposit(100.00m);
-        mockRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => 
@@ -104,13 +111,14 @@ public class ServiceTests
     public void AccountService_Withdraw_ShouldThrowExceptionForFrozenAccount()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var account = new Account("Test Account", AccountType.Current);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var account = new Account("Test Account", AccountType.Current, "1234");
         account.Deposit(100.00m);
         account.FreezeAccount();
-        mockRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => 
@@ -122,20 +130,22 @@ public class ServiceTests
     public void AccountService_Transfer_ShouldTransferBetweenAccounts()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var sourceAccount = new Account("Source Account", AccountType.Current);
-        var destinationAccount = new Account("Destination Account", AccountType.Saving);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var sourceAccount = new Account("Source Account", AccountType.Current, "1234");
+        var destinationAccount = new Account("Destination Account", AccountType.Saving, "12343");
         sourceAccount.Deposit(200.00m);
         
-        mockRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
-        mockRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
-        mockRepo.Setup(r => r.Update(It.IsAny<Account>())).Callback<Account>(a => 
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
+        mockAccountRepo.Setup(r => r.Update(It.IsAny<Account>())).Callback<Account>(a => 
         {
             if (a.AccountNumber == sourceAccount.AccountNumber) sourceAccount = a;
             if (a.AccountNumber == destinationAccount.AccountNumber) destinationAccount = a;
         });
+        mockTransactionRepo.Setup(r => r.Add(It.IsAny<Transaction>()));
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act
         service.Transfer(sourceAccount.AccountNumber, destinationAccount.AccountNumber, 75.00m);
@@ -143,23 +153,25 @@ public class ServiceTests
         // Assert
         Assert.Equal(125.00m, sourceAccount.AccountBalance);
         Assert.Equal(75.00m, destinationAccount.AccountBalance);
-        Assert.Equal(2, sourceAccount.TransactionHistory.Count);
-        Assert.Single(destinationAccount.TransactionHistory);
+        Assert.Equal(2, sourceAccount.TransactionIds.Count);
+        Assert.Single(destinationAccount.TransactionIds);
+        mockTransactionRepo.Verify(r => r.Add(It.IsAny<Transaction>()), Times.Exactly(2));
     }
 
     [Fact]
     public void AccountService_Transfer_ShouldThrowExceptionForInsufficientFunds()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var sourceAccount = new Account("Source Account", AccountType.Current);
-        var destinationAccount = new Account("Destination Account", AccountType.Saving);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var sourceAccount = new Account("Source Account", AccountType.Current, "1234");
+        var destinationAccount = new Account("Destination Account", AccountType.Saving, "12343");
         sourceAccount.Deposit(50.00m);
         
-        mockRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
-        mockRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => 
@@ -171,16 +183,17 @@ public class ServiceTests
     public void AccountService_Transfer_ShouldThrowExceptionForFrozenSourceAccount()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var sourceAccount = new Account("Source Account", AccountType.Current);
-        var destinationAccount = new Account("Destination Account", AccountType.Saving);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var sourceAccount = new Account("Source Account", AccountType.Current, "1234");
+        var destinationAccount = new Account("Destination Account", AccountType.Saving, "12343");
         sourceAccount.Deposit(200.00m);
         sourceAccount.FreezeAccount();
         
-        mockRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
-        mockRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => 
@@ -192,16 +205,17 @@ public class ServiceTests
     public void AccountService_Transfer_ShouldThrowExceptionForFrozenDestinationAccount()
     {
         // Arrange
-        var mockRepo = new Mock<IAccountRepository>();
-        var sourceAccount = new Account("Source Account", AccountType.Current);
-        var destinationAccount = new Account("Destination Account", AccountType.Saving);
+        var mockAccountRepo = new Mock<IAccountRepository>();
+        var mockTransactionRepo = new Mock<ITransactionRepository>();
+        var sourceAccount = new Account("Source Account", AccountType.Current, "1234");
+        var destinationAccount = new Account("Destination Account", AccountType.Saving, "12343");
         sourceAccount.Deposit(200.00m);
         destinationAccount.FreezeAccount();
         
-        mockRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
-        mockRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(sourceAccount.AccountNumber)).Returns(sourceAccount);
+        mockAccountRepo.Setup(r => r.GetByAccountNumber(destinationAccount.AccountNumber)).Returns(destinationAccount);
         
-        var service = new AccountService(mockRepo.Object);
+        var service = new AccountService(mockAccountRepo.Object, mockTransactionRepo.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => 
@@ -219,7 +233,7 @@ public class ServiceTests
         var customer = new Customer("John Doe", Gender.Male, 30, DateTime.Now.AddYears(-30), "US", MaritalStatus.Single, "555-1234", "123 Main St", "John", "john1234");
 
         // Act
-        service.CreateCustomer(customer);
+        service.CreateCustomer(customer, AccountType.Current);
 
         // Assert
         mockRepo.Verify(r => r.Add(customer), Times.Once);
@@ -310,7 +324,7 @@ public class ServiceTests
         // Arrange
         var mockAccountRepo = new Mock<IAccountRepository>();
         var mockTransactionRepo = new Mock<ITransactionRepository>();
-        var account = new Account("Test Account", AccountType.Current);
+        var account = new Account("Test Account", AccountType.Current, "1234");
         mockAccountRepo.Setup(r => r.GetByAccountNumber(account.AccountNumber)).Returns(account);
         
         var service = new TransactionService(mockAccountRepo.Object, mockTransactionRepo.Object);
@@ -343,7 +357,7 @@ public class ServiceTests
         // Arrange
         var mockAccountRepo = new Mock<IAccountRepository>();
         var mockTransactionRepo = new Mock<ITransactionRepository>();
-        var account = new Account("Test Account", AccountType.Current);
+        var account = new Account("Test Account", AccountType.Current, "1234");
         var transactions = new List<Transaction>
         {
             new Transaction

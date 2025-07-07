@@ -70,7 +70,7 @@ DatabaseManager.RestoreDatabase("/Users/username/Backups/BankApp_Backup_20240115
   "accountNumber": "1000001",
   "accountType": 0,
   "accountBalance": 1500.00,
-  "transactionHistory": [],
+  "transactionIds": [],
   "dateCreated": "2024-01-15T10:30:00.000Z",
   "isFrozen": false
 }
@@ -87,7 +87,7 @@ DatabaseManager.RestoreDatabase("/Users/username/Backups/BankApp_Backup_20240115
   "maritalStatus": 1,
   "phoneNumber": "555-123-4567",
   "address": "123 Main St, New York, NY 10001",
-  "accounts": [
+  "accountNumbers": [
     "10000123"
   ],
   "complaints": [],
@@ -118,6 +118,7 @@ DatabaseManager.RestoreDatabase("/Users/username/Backups/BankApp_Backup_20240115
 ### **AccountType**
 - `0` = Current
 - `1` = Saving
+- `2` = Fixed Deposit
 
 ### **Gender**
 - `0` = Male

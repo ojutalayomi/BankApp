@@ -1,4 +1,3 @@
-using Xunit;
 using BankApp.Data.Repositories;
 using BankApp.Abstractions.Enums;
 using BankApp.Abstractions;
@@ -19,7 +18,7 @@ public class RepositoryTests
     {
         // Arrange
         var repository = new JsonAccountRepository();
-        var account = new Account("Test Account", AccountType.Current);
+        var account = new Account("Test Account", AccountType.Current, "1234");
 
         // Act
         repository.Add(account);
@@ -36,8 +35,8 @@ public class RepositoryTests
     {
         // Arrange
         var repository = new JsonAccountRepository();
-        var account1 = new Account("Test Account 1", AccountType.Current);
-        var account2 = new Account("Test Account 2", AccountType.Saving);
+        var account1 = new Account("Test Account 1", AccountType.Current, "1234");
+        var account2 = new Account("Test Account 2", AccountType.Saving, "12343");
 
         // Act
         repository.Add(account1);
@@ -55,7 +54,7 @@ public class RepositoryTests
     {
         // Arrange
         var repository = new JsonAccountRepository();
-        var account = new Account("Original Name", AccountType.Current);
+        var account = new Account("Original Name", AccountType.Current, "1234");
         repository.Add(account);
 
         // Act
@@ -64,7 +63,7 @@ public class RepositoryTests
 
         // Assert
         var updatedAccount = repository.GetByAccountNumber(account.AccountNumber);
-        Assert.Equal("Updated Name", updatedAccount.AccountName);
+        Assert.Equal("Updated Name", updatedAccount?.AccountName);
     }
 
     [Fact]
@@ -72,7 +71,7 @@ public class RepositoryTests
     {
         // Arrange
         var repository = new JsonAccountRepository();
-        var account = new Account("Test Account", AccountType.Current);
+        var account = new Account("Test Account", AccountType.Current, "12343");
         repository.Add(account);
 
         // Act
@@ -88,7 +87,7 @@ public class RepositoryTests
     {
         // Arrange
         var repository = new JsonAccountRepository();
-        var account = new Account("Test Account", AccountType.Current);
+        var account = new Account("Test Account", AccountType.Current, "12343");
         repository.Add(account);
 
         // Act
@@ -161,7 +160,7 @@ public class RepositoryTests
 
         // Assert
         var updatedCustomer = repository.GetByName(customer.Name);
-        Assert.Equal("555-9999", updatedCustomer.PhoneNumber);
+        Assert.Equal("555-9999", updatedCustomer?.PhoneNumber);
     }
 
     [Fact]

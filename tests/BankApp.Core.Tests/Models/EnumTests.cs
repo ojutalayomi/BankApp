@@ -10,8 +10,10 @@ public class EnumTests
         // Assert
         Assert.Equal(0, (int)AccountType.Current);
         Assert.Equal(1, (int)AccountType.Saving);
-        Assert.Equal("Current", AccountType.Current.ToString());
-        Assert.Equal("Saving", AccountType.Saving.ToString());
+        Assert.Equal(2, (int)AccountType.FixedDeposit);
+        Assert.Equal("Saving", nameof(AccountType.Saving));
+        Assert.Equal("Current", nameof(AccountType.Current));
+        Assert.Equal("FixedDeposit", nameof(AccountType.FixedDeposit));
     }
 
     [Fact]
@@ -21,9 +23,9 @@ public class EnumTests
         Assert.Equal(0, (int)TransactionType.Withdraw);
         Assert.Equal(1, (int)TransactionType.Deposit);
         Assert.Equal(2, (int)TransactionType.Transfer);
-        Assert.Equal("Withdraw", TransactionType.Withdraw.ToString());
-        Assert.Equal("Deposit", TransactionType.Deposit.ToString());
-        Assert.Equal("Transfer", TransactionType.Transfer.ToString());
+        Assert.Equal("Withdraw", nameof(TransactionType.Withdraw));
+        Assert.Equal("Deposit", nameof(TransactionType.Deposit));
+        Assert.Equal("Transfer", nameof(TransactionType.Transfer));
     }
 
     [Fact]

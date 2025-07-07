@@ -95,7 +95,7 @@ public class AccountManagerTests
     {
         // Arrange
         var accountManager = new AccountManager();
-        var account = new Account("Test Account", AccountType.Current);
+        var account = new Account("Test Account", AccountType.Current, "CUST123");
 
         // Act
         accountManager.DeactivateAccount(account);
@@ -162,8 +162,8 @@ public class AccountManagerTests
     {
         // Arrange
         var accountManager = new AccountManager();
-        var account1 = new Account("Current Account", AccountType.Current);
-        var account2 = new Account("Saving Account", AccountType.Saving);
+        var account1 = new Account("Current Account", AccountType.Current, "CUST123");
+        var account2 = new Account("Saving Account", AccountType.Saving, "CUST456");
 
         // Act
         accountManager.ManagedAccounts.Add(account1);
@@ -180,8 +180,8 @@ public class AccountManagerTests
     {
         // Arrange
         var accountManager = new AccountManager();
-        var account1 = new Account("Account 1", AccountType.Current);
-        var account2 = new Account("Account 2", AccountType.Saving);
+        var account1 = new Account("Account 1", AccountType.Current, "CUST123");
+        var account2 = new Account("Account 2", AccountType.Saving, "CUST456");
 
         // Act
         accountManager.DeactivateAccount(account1);

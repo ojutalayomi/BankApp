@@ -22,7 +22,7 @@ public class JsonCustomerRepository : ICustomerRepository
     /// This method searches for a customer using their unique ID.
     /// It loads all customers from the JSON file and searches for a match.
     /// </remarks>
-    public Customer? GetById(string id)
+    public Customer? GetCustomerById(string id)
     {
         var customers = JsonDatabase.LoadCustomers();
         return customers.FirstOrDefault(c => c.Id == id);

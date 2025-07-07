@@ -39,13 +39,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
 # Mono auto generated files
 mono_crash.*
 
@@ -194,9 +187,6 @@ publish/
 *.pubxml
 *.publishproj
 
-# Microsoft Azure Web App publish settings
-*.azurePubxml
-
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
@@ -287,10 +277,6 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files
-*.ncb
-*.aps
-
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -368,7 +354,6 @@ FodyWeavers.xsd
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-*.code-workspace
 
 # Local History for Visual Studio Code
 .history/
@@ -379,14 +364,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-
-# JetBrains Rider
-*.sln.iml
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
 
 # Icon must end with two \r
 Icon
@@ -410,9 +387,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Linux
-*~
-
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
 
@@ -426,7 +400,6 @@ Temporary Items
 .nfs*
 
 # JetBrains IDEs
-.idea/
 *.iml
 *.ipr
 *.iws
@@ -438,10 +411,8 @@ Temporary Items
 # Vim
 *.swp
 *.swo
-*~
 
 # Emacs
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
@@ -450,32 +421,11 @@ auto-save-list
 tramp
 .\#*
 
-# User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Mono auto generated files
-mono_crash.*
-
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
 # Folder config file
 [Dd]esktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
 
 # Windows shortcuts
 *.lnk 

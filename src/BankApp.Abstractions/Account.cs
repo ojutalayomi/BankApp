@@ -25,6 +25,12 @@ public class Account
     public string AccountNumber { get; set; }
     
     /// <summary>
+    /// Gets or sets the unique customer id.
+    /// </summary>
+    /// <value>A string representing the customer id.</value>
+    public string CustomerId { get; protected set; }
+    
+    /// <summary>
     /// Gets or sets the type of account (Current or Saving).
     /// </summary>
     /// <value>An AccountType enum value.</value>
@@ -37,10 +43,10 @@ public class Account
     public decimal AccountBalance { get; set; }
     
     /// <summary>
-    /// Gets or sets the list of transactions associated with this account.
+    /// Gets or sets the list of transaction IDs associated with this account.
     /// </summary>
-    /// <value>A list of Transaction objects representing the account's transaction history.</value>
-    public List<Transaction> TransactionHistory { get; set; }
+    /// <value>A list of strings representing the transaction IDs for this account.</value>
+    public List<string> TransactionIds { get; set; }
     
     /// <summary>
     /// Gets or sets the date when the account was created.
@@ -64,9 +70,10 @@ public class Account
     {
         AccountName = string.Empty;
         AccountNumber = string.Empty;
+        CustomerId = string.Empty;
         AccountType = AccountType.Current;
         AccountBalance = 0m;
-        TransactionHistory = new List<Transaction>();
+        TransactionIds = new List<string>();
         DateCreated = DateTime.Now;
         IsFrozen = false;
     }
@@ -76,15 +83,17 @@ public class Account
     /// </summary>
     /// <param name="accountName">The name of the account.</param>
     /// <param name="accountType">The type of account (Current or Saving).</param>
+    /// <param name="customerId">The unique id of the customer</param>
     /// <remarks>
     /// This constructor automatically generates a unique account number using AccountGenerator.
     /// </remarks>
-    public Account(string accountName, AccountType accountType)
+    public Account(string accountName, AccountType accountType, string customerId)
     {
         AccountName = accountName;
         AccountNumber = AccountGenerator.GenerateAccountNumber();
+        CustomerId = customerId;
         AccountType = accountType;
-        TransactionHistory = [];
+        TransactionIds = [];
         DateCreated = DateTime.Now;
         IsFrozen = false;
     }
@@ -95,15 +104,17 @@ public class Account
     /// <param name="accountName">The name of the account.</param>
     /// <param name="accountNumber">The account number to use.</param>
     /// <param name="accountType">The type of account (Current or Saving).</param>
+    /// <param name="customerId">The unique id of the customer</param>
     /// <remarks>
     /// This constructor allows manual specification of the account number.
     /// </remarks>
-    public Account(string accountName, string accountNumber, AccountType accountType)
+    public Account(string accountName, string accountNumber, AccountType accountType, string customerId)
     {
         AccountName = accountName;
         AccountNumber = accountNumber;
+        CustomerId = customerId;
         AccountType = accountType;
-        TransactionHistory = [];
+        TransactionIds = [];
         DateCreated = DateTime.Now;
         IsFrozen = false;
     }
@@ -112,13 +123,14 @@ public class Account
     /// Deposits the specified amount into the account.
     /// </summary>
     /// <param name="amount">The amount to deposit. Must be positive.</param>
+    /// <returns>The created transaction object.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the account is frozen.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the amount is not positive.</exception>
     /// <remarks>
     /// This method adds the specified amount to the account balance and creates
-    /// a transaction record in the account's transaction history.
+    /// a transaction record. The transaction should be saved separately by the calling code.
     /// </remarks>
-    public void Deposit(decimal amount)
+    public Transaction Deposit(decimal amount)
     {
         if (IsFrozen)
         {
@@ -131,13 +143,14 @@ public class Account
         }
 
         AccountBalance += amount;
-        TransactionHistory.Add(new Transaction
+        
+        var transaction = new Transaction
         {
             Id = Guid.NewGuid().ToString(),
             TransactionType = TransactionType.Deposit,
             Amount = amount,
-            SourceAccount = AccountNumber,
-            DestinationAccount = "",
+            SourceAccount = "",
+            DestinationAccount = AccountNumber,
             DateCreated = DateTime.Now,
             Status = TransactionStatus.Completed,
             Description = $"Deposit of {amount:C}",
@@ -145,20 +158,24 @@ public class Account
             Initiator = "System",
             Channel = "ATM",
             ReferenceNumber = Guid.NewGuid().ToString()
-        });
+        };
+        
+        TransactionIds.Add(transaction.Id);
+        return transaction;
     }
 
     /// <summary>
     /// Withdraws the specified amount from the account.
     /// </summary>
     /// <param name="amount">The amount to withdraw. Must be positive.</param>
+    /// <returns>The created transaction object.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the account is frozen or has insufficient funds.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the amount is not positive.</exception>
     /// <remarks>
     /// This method subtracts the specified amount from the account balance and creates
-    /// a transaction record in the account's transaction history.
+    /// a transaction record. The transaction should be saved separately by the calling code.
     /// </remarks>
-    public void Withdraw(decimal amount)
+    public Transaction Withdraw(decimal amount)
     {
         if (IsFrozen)
         {
@@ -176,7 +193,8 @@ public class Account
         }
 
         AccountBalance -= amount;
-        TransactionHistory.Add(new Transaction
+        
+        var transaction = new Transaction
         {
             Id = Guid.NewGuid().ToString(),
             TransactionType = TransactionType.Withdraw,
@@ -190,7 +208,10 @@ public class Account
             Initiator = "System",
             Channel = "ATM",
             ReferenceNumber = Guid.NewGuid().ToString()
-        });
+        };
+        
+        TransactionIds.Add(transaction.Id);
+        return transaction;
     }
 
     /// <summary>
@@ -198,13 +219,14 @@ public class Account
     /// </summary>
     /// <param name="amount">The amount to transfer. Must be positive.</param>
     /// <param name="destinationAccount">The destination account to transfer funds to.</param>
+    /// <returns>A tuple containing the source and destination transaction objects.</returns>
     /// <exception cref="InvalidOperationException">Thrown when either account is frozen or source account has insufficient funds.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the amount is not positive.</exception>
     /// <remarks>
     /// This method transfers funds between accounts and creates transaction records
-    /// in both accounts' transaction histories with the same reference number.
+    /// for both accounts. The transactions should be saved separately by the calling code.
     /// </remarks>
-    public void Transfer(decimal amount, Account destinationAccount)
+    public (Transaction sourceTransaction, Transaction destinationTransaction) Transfer(decimal amount, Account destinationAccount)
     {
         if (IsFrozen)
         {
@@ -247,7 +269,7 @@ public class Account
             Channel = "Online",
             ReferenceNumber = referenceNumber
         };
-        TransactionHistory.Add(transferOut);
+        TransactionIds.Add(transferOut.Id);
 
         var transferIn = new Transaction
         {
@@ -264,7 +286,9 @@ public class Account
             Channel = "Online",
             ReferenceNumber = referenceNumber
         };
-        destinationAccount.TransactionHistory.Add(transferIn);
+        destinationAccount.TransactionIds.Add(transferIn.Id);
+        
+        return (transferOut, transferIn);
     }
 
     /// <summary>

@@ -16,18 +16,25 @@ public class AccountService : IAccountService
     /// The repository for account data access operations.
     /// </summary>
     private readonly IAccountRepository _accountRepo;
+    
+    /// <summary>
+    /// The repository for transaction data access operations.
+    /// </summary>
+    private readonly ITransactionRepository _transactionRepo;
 
     /// <summary>
     /// Initializes a new instance of the AccountService class.
     /// </summary>
     /// <param name="accountRepo">The account repository for data access.</param>
+    /// <param name="transactionRepo">The transaction repository for data access.</param>
     /// <remarks>
-    /// This constructor injects the account repository dependency
-    /// to enable data access operations.
+    /// This constructor injects both account and transaction repository dependencies
+    /// to enable comprehensive account and transaction management operations.
     /// </remarks>
-    public AccountService(IAccountRepository accountRepo)
+    public AccountService(IAccountRepository accountRepo, ITransactionRepository transactionRepo)
     {
         _accountRepo = accountRepo;
+        _transactionRepo = transactionRepo;
     }
 
     /// <summary>
@@ -41,7 +48,7 @@ public class AccountService : IAccountService
     /// <remarks>
     /// This method validates the account exists, is not frozen, and the amount is positive
     /// before performing the deposit operation. The account balance is updated and
-    /// a transaction record is created.
+    /// a transaction record is created and saved separately.
     /// </remarks>
     public void Deposit(string accountNumber, decimal amount)
     {
@@ -56,7 +63,8 @@ public class AccountService : IAccountService
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Deposit amount must be positive.");
         
-        account.Deposit(amount);
+        var transaction = account.Deposit(amount);
+        _transactionRepo.Add(transaction);
         _accountRepo.Update(account);
     }
 
@@ -71,7 +79,7 @@ public class AccountService : IAccountService
     /// <remarks>
     /// This method validates both accounts exist, are not frozen, the amount is positive,
     /// and the source account has sufficient funds before performing the transfer.
-    /// Both accounts are updated and transaction records are created for both accounts.
+    /// Both accounts are updated and transaction records are created and saved separately.
     /// </remarks>
     public void Transfer(string sourceAccountNumber, string destinationAccountNumber, decimal amount)
     {
@@ -96,8 +104,10 @@ public class AccountService : IAccountService
         if (sourceAccount.AccountBalance < amount)
             throw new InvalidOperationException("Insufficient funds.");
         
-        sourceAccount.Transfer(amount, destinationAccount);
+        var (sourceTransaction, destinationTransaction) = sourceAccount.Transfer(amount, destinationAccount);
         
+        _transactionRepo.Add(sourceTransaction);
+        _transactionRepo.Add(destinationTransaction);
         _accountRepo.Update(sourceAccount);
         _accountRepo.Update(destinationAccount);
     }
@@ -112,7 +122,7 @@ public class AccountService : IAccountService
     /// <remarks>
     /// This method validates the account exists, is not frozen, the amount is positive,
     /// and the account has sufficient funds before performing the withdrawal.
-    /// The account balance is updated and a transaction record is created.
+    /// The account balance is updated and a transaction record is created and saved separately.
     /// </remarks>
     public void Withdraw(string accountNumber, decimal amount)
     {
@@ -130,7 +140,8 @@ public class AccountService : IAccountService
         if (account.AccountBalance < amount)
             throw new InvalidOperationException("Insufficient funds.");
 
-        account.Withdraw(amount);
+        var transaction = account.Withdraw(amount);
+        _transactionRepo.Add(transaction);
         _accountRepo.Update(account);
     }
 } 

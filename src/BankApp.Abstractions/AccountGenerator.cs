@@ -1,7 +1,6 @@
-using BankApp.Abstractions;
 using BankApp.Abstractions.Enums;
 
-namespace BankApp.Core.Utilities;
+namespace BankApp.Abstractions;
 
 /// <summary>
 /// Provides static methods for generating account numbers and creating account instances.
@@ -16,12 +15,32 @@ public static class AccountGenerator
     /// The starting account number for new accounts.
     /// </summary>
     private static int _accountNumberCounter = 1000000; // Starting account number
-    private static var _accountNumberCounter_ = new JsonAccountRepository(); // Starting account number
     
     /// <summary>
     /// Lock object for thread-safe account number generation.
     /// </summary>
     private static readonly object LockObject = new();
+    
+    /// <summary>
+    /// Flag to track if the counter has been initialized from existing accounts.
+    /// </summary>
+    private static bool _isInitialized = false;
+
+    /// <summary>
+    /// Initializes the account number counter to a specific value.
+    /// </summary>
+    /// <param name="startingNumber">The starting number for the counter.</param>
+    /// <remarks>
+    /// This method allows external components to set the starting counter value
+    /// based on existing account numbers in the database.
+    /// </remarks>
+    public static void InitializeCounter(int startingNumber)
+    {
+        lock (LockObject)
+        {
+            _accountNumberCounter = startingNumber;
+        }
+    }
 
     /// <summary>
     /// Generates a unique account number.
@@ -45,15 +64,16 @@ public static class AccountGenerator
     /// </summary>
     /// <param name="accountName">Name of the account.</param>
     /// <param name="accountType">Type of account (Current or Saving).</param>
+    /// <param name="customerId">The unique id of the customer</param>
     /// <returns>A new Account instance with a generated account number.</returns>
     /// <remarks>
     /// This method combines account number generation with account creation for convenience.
     /// The account number is automatically generated using the GenerateAccountNumber method.
     /// </remarks>
-    public static Account CreateAccount(string accountName, AccountType accountType)
+    public static Account CreateAccount(string accountName, AccountType accountType, string customerId)
     {
         var accountNumber = GenerateAccountNumber();
-        return new Account(accountName, accountNumber, accountType);
+        return new Account(accountName, accountNumber, accountType, customerId);
     }
 
     /// <summary>
@@ -62,14 +82,15 @@ public static class AccountGenerator
     /// <param name="accountName">Name of the account.</param>
     /// <param name="accountNumber">Account number to use.</param>
     /// <param name="accountType">Type of account (Current or Saving).</param>
+    /// <param name="customerId">The unique id of the customer</param>
     /// <returns>A new Account instance with the specified account number.</returns>
     /// <remarks>
     /// This method allows manual specification of the account number, which is useful
     /// for testing or when importing accounts from external systems.
     /// </remarks>
-    public static Account CreateAccount(string accountName, string accountNumber, AccountType accountType)
+    public static Account CreateAccount(string accountName, string accountNumber, AccountType accountType, string customerId)
     {
-        return new Account(accountName, accountNumber, accountType);
+        return new Account(accountName, accountNumber, accountType, customerId);
     }
 
     /// <summary>
@@ -83,7 +104,7 @@ public static class AccountGenerator
     /// </remarks>
     public static Account CreateDefaultCurrentAccount(string customerName)
     {
-        return CreateAccount($"{customerName}'s Current Account", AccountType.Current);
+        return CreateAccount($"{customerName}'s Current Account", AccountType.Current, "12343");
     }
 
     /// <summary>
@@ -97,6 +118,6 @@ public static class AccountGenerator
     /// </remarks>
     public static Account CreateDefaultSavingAccount(string customerName)
     {
-        return CreateAccount($"{customerName}'s Saving Account", AccountType.Saving);
+        return CreateAccount($"{customerName}'s Saving Account", AccountType.Saving, "1234");
     }
 } 

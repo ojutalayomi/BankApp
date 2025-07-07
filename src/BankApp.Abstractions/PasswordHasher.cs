@@ -10,7 +10,7 @@ namespace BankApp.Abstractions;
 /// Key Derivation Function 2) algorithm with SHA256. It includes salt generation and
 /// verification capabilities for secure password storage and authentication.
 /// </remarks>
-public class PasswordHasher
+public abstract class PasswordHasher
 {
     /// <summary>
     /// Hashes a password using PBKDF2 with a random salt.

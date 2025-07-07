@@ -25,5 +25,14 @@ public enum AccountType
     /// Savings accounts typically offer higher interest rates than current accounts
     /// but may have transaction limits and restrictions.
     /// </remarks>
-    Saving
+    Saving,
+    
+    /// <summary>
+    /// A fixed deposit account that locks funds for a set period at a fixed interest rate.
+    /// </summary>
+    /// <remarks>
+    /// Fixed deposit accounts offer the highest interest rates but funds cannot be withdrawn
+    /// before maturity without incurring penalties. No transactions are allowed during the term.
+    /// </remarks>
+    FixedDeposit
 } 

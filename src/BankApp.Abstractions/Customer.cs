@@ -165,7 +165,7 @@ public class Customer
     public void AddAccount(string accountNumber)
     {
         if (!AccountNumbers.Contains(accountNumber))
-        {
+    {
             AccountNumbers.Add(accountNumber);
         }
     }

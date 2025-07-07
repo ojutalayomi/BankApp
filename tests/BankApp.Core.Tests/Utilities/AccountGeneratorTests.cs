@@ -40,15 +40,15 @@ public class AccountGeneratorTests
         var accountType = AccountType.Current;
 
         // Act
-        var account = AccountGenerator.CreateAccount(accountName, accountType);
+        var account = AccountGenerator.CreateAccount(accountName, accountType, "1234");
 
         // Assert
         Assert.Equal(accountName, account.AccountName);
         Assert.Equal(accountType, account.AccountType);
         Assert.NotNull(account.AccountNumber);
         Assert.False(account.IsFrozen);
-        Assert.NotNull(account.TransactionHistory);
-        Assert.Empty(account.TransactionHistory);
+        Assert.NotNull(account.TransactionIds);
+        Assert.Empty(account.TransactionIds);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class AccountGeneratorTests
         var accountType = AccountType.Saving;
 
         // Act
-        var account = AccountGenerator.CreateAccount(accountName, accountNumber, accountType);
+        var account = AccountGenerator.CreateAccount(accountName, accountNumber, accountType, "1234");
 
         // Assert
         Assert.Equal(accountName, account.AccountName);
@@ -103,8 +103,8 @@ public class AccountGeneratorTests
     public void CreateAccount_GeneratesDifferentAccountNumbers()
     {
         // Act
-        var account1 = AccountGenerator.CreateAccount("Account 1", AccountType.Current);
-        var account2 = AccountGenerator.CreateAccount("Account 2", AccountType.Saving);
+        var account1 = AccountGenerator.CreateAccount("Account 1", AccountType.Current, "1234");
+        var account2 = AccountGenerator.CreateAccount("Account 2", AccountType.Saving, "1234");
 
         // Assert
         Assert.NotEqual(account1.AccountNumber, account2.AccountNumber);

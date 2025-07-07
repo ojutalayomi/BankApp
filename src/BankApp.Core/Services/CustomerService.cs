@@ -42,17 +42,18 @@ public class CustomerService : ICustomerService
     /// Creates a new customer with a default current account.
     /// </summary>
     /// <param name="customer">The customer to create.</param>
+    /// <param name="accountType">The account type to create.</param>
     /// <remarks>
     /// This method creates a new customer and automatically creates a default
     /// current account for them. The account is linked to the customer and
     /// both are saved to their respective repositories.
     /// </remarks>
-    public void CreateCustomer(Customer customer)
+    public void CreateCustomer(Customer customer, AccountType? accountType)
     {
         // Create a default current account for the customer
-        var defaultAccount = new Account($"{customer.Name}'s Current Account", AccountType.Current);
+        var defaultAccount = new Account($"{customer.Name}", accountType ?? AccountType.Current, customer.Id);
         
-        // Add the account to the accounts repository
+        // Add the account to the accounts' repository
         _accountRepo.Add(defaultAccount);
         
         // Add the account number to the customer's account list
@@ -122,18 +123,18 @@ public class CustomerService : ICustomerService
     /// <summary>
     /// Retrieves all accounts associated with a specific customer.
     /// </summary>
-    /// <param name="customerName">The name of the customer whose accounts to retrieve.</param>
+    /// <param name="customerId">The Id of the customer whose accounts to retrieve.</param>
     /// <returns>An enumerable collection of accounts associated with the customer.</returns>
     /// <remarks>
     /// This method finds the customer by name and then retrieves all accounts
     /// that are linked to that customer through their account numbers.
     /// Returns an empty collection if the customer is not found.
     /// </remarks>
-    public IEnumerable<Account> GetCustomerAccounts(string customerName)
+    public IEnumerable<Account> GetCustomerAccounts(string customerId)
     {
-        var customer = _customerRepo.GetCustomer(customerName);
+        var customer = _customerRepo.GetCustomerById(customerId);
         if (customer == null)
-            return Enumerable.Empty<Account>();
+            return [];
 
         var accounts = new List<Account>();
         foreach (var accountNumber in customer.AccountNumbers)

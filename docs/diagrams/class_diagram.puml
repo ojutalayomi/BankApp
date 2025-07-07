@@ -1,0 +1,400 @@
+@startuml BankApp Class Diagram
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam classFontName Arial
+skinparam packageFontSize 14
+skinparam packageFontName Arial Bold
+
+package "BankApp.Abstractions" {
+    class Account {
+        +string AccountName
+        +string AccountNumber
+        +string CustomerId
+        +AccountType AccountType
+        +decimal AccountBalance
+        +List<string> TransactionIds
+        +DateTime DateCreated
+        +bool IsFrozen
+        --
+        +Account()
+        +Account(string name, AccountType type, string customerId)
+        +Account(string name, string number, AccountType type, string customerId)
+        +Transaction Deposit(decimal amount)
+        +Transaction Withdraw(decimal amount)
+        +(Transaction, Transaction) Transfer(decimal amount, Account destination)
+        +void FreezeAccount()
+        +void UnfreezeAccount()
+    }
+
+    class Customer {
+        +string Id
+        +string Name
+        +Gender Gender
+        +int Age
+        +DateTime DateOfBirth
+        +string Nationality
+        +MaritalStatus MaritalStatus
+        +string PhoneNumber
+        +string Address
+        +string Username
+        +string Password
+        +List<string> AccountNumbers
+        +List<Complaint> Complaints
+        +List<string> Transactions
+        --
+        +Customer()
+        +Customer(string name, Gender gender, int age, DateTime dob, string nationality, MaritalStatus status, string phone, string address, string username, string password)
+        +bool ValidatePassword(string password)
+    }
+
+    class Transaction {
+        +string Id
+        +TransactionType TransactionType
+        +decimal Amount
+        +string SourceAccount
+        +string DestinationAccount
+        +TransactionStatus Status
+        +DateTime DateCreated
+        +string Description
+        +decimal BalanceAfterTransaction
+        +string Initiator
+        +string Channel
+        +string ReferenceNumber
+        --
+        +Transaction()
+    }
+
+    class AccountManager {
+        +string Id
+        +string AccountManagerName
+        +string Username
+        +string Password
+        +string Email
+        +string PhoneNumber
+        +DateTime DateCreated
+        --
+        +AccountManager()
+        +AccountManager(string name, string username, string password, string email, string phone)
+        +bool ValidatePassword(string password)
+    }
+
+    class Complaint {
+        +string Id
+        +string CustomerId
+        +string Description
+        +ComplaintStatus Status
+        +DateTime DateCreated
+        +DateTime? DateResolved
+        --
+        +Complaint()
+        +Complaint(string customerId, string description)
+    }
+
+    enum AccountType {
+        Current
+        Saving
+    }
+
+    enum TransactionType {
+        Deposit
+        Withdraw
+        Transfer
+    }
+
+    enum TransactionStatus {
+        Pending
+        Completed
+        Failed
+    }
+
+    enum Gender {
+        Male
+        Female
+        Other
+    }
+
+    enum MaritalStatus {
+        Single
+        Married
+        Divorced
+        Widowed
+    }
+
+    enum ComplaintStatus {
+        Open
+        InProgress
+        Resolved
+        Closed
+    }
+
+    interface IRepository<T> {
+        +IEnumerable<T> GetAll()
+        +T GetById(string id)
+        +void Add(T entity)
+        +void Update(T entity)
+        +void Delete(string id)
+    }
+
+    interface IAccountRepository {
+        +Account GetByAccountNumber(string accountNumber)
+    }
+
+    interface ICustomerRepository {
+        +Customer GetByName(string name)
+        +Customer GetById(string id)
+    }
+
+    interface ITransactionRepository {
+        +IEnumerable<Transaction> GetByAccount(string accountNumber)
+    }
+
+    interface IAccountManagerRepository {
+        +AccountManager GetAccountManager(string username)
+    }
+}
+
+package "BankApp.Core" {
+    interface IAccountService {
+        +void Deposit(string accountNumber, decimal amount)
+        +void Withdraw(string accountNumber, decimal amount)
+        +void Transfer(string sourceAccount, string destinationAccount, decimal amount)
+    }
+
+    interface ICustomerService {
+        +void CreateCustomer(Customer customer)
+        +Customer GetCustomer(string name)
+        +IEnumerable<Customer> GetAllCustomers()
+        +void UpdateCustomer(Customer customer)
+        +void DeleteCustomer(string id)
+        +IEnumerable<Account> GetCustomerAccounts(string customerId)
+    }
+
+    interface ITransactionService {
+        +void CreateTransaction(Transaction transaction)
+        +IEnumerable<Transaction> GetTransactionsByAccount(string accountNumber)
+        +Transaction GetTransaction(string id)
+    }
+
+    interface IAccountManagerService {
+        +void CreateAccountManager(AccountManager accountManager)
+        +AccountManager GetAccountManager(string username)
+        +IEnumerable<AccountManager> GetAllAccountManagers()
+        +void UpdateAccountManager(AccountManager accountManager)
+        +void DeleteAccountManager(string id)
+    }
+
+    class AccountService {
+        -IAccountRepository _accountRepo
+        -ITransactionRepository _transactionRepo
+        --
+        +AccountService(IAccountRepository accountRepo, ITransactionRepository transactionRepo)
+        +void Deposit(string accountNumber, decimal amount)
+        +void Withdraw(string accountNumber, decimal amount)
+        +void Transfer(string sourceAccount, string destinationAccount, decimal amount)
+    }
+
+    class CustomerService {
+        -ICustomerRepository _customerRepo
+        -IAccountRepository _accountRepo
+        --
+        +CustomerService(ICustomerRepository customerRepo, IAccountRepository accountRepo)
+        +void CreateCustomer(Customer customer)
+        +Customer GetCustomer(string name)
+        +IEnumerable<Customer> GetAllCustomers()
+        +void UpdateCustomer(Customer customer)
+        +void DeleteCustomer(string id)
+        +IEnumerable<Account> GetCustomerAccounts(string customerId)
+    }
+
+    class TransactionService {
+        -IAccountRepository _accountRepo
+        -ITransactionRepository _transactionRepo
+        --
+        +TransactionService(IAccountRepository accountRepo, ITransactionRepository transactionRepo)
+        +void CreateTransaction(Transaction transaction)
+        +IEnumerable<Transaction> GetTransactionsByAccount(string accountNumber)
+        +Transaction GetTransaction(string id)
+    }
+
+    class AccountManagerService {
+        -IAccountManagerRepository _accountManagerRepo
+        --
+        +AccountManagerService(IAccountManagerRepository accountManagerRepo)
+        +void CreateAccountManager(AccountManager accountManager)
+        +AccountManager GetAccountManager(string username)
+        +IEnumerable<AccountManager> GetAllAccountManagers()
+        +void UpdateAccountManager(AccountManager accountManager)
+        +void DeleteAccountManager(string id)
+    }
+
+    class Validators {
+        +static bool IsValidEmail(string email)
+        +static bool IsValidPhoneNumber(string phoneNumber)
+        +static bool IsValidAge(int age)
+        +static bool IsValidAmount(decimal amount)
+    }
+}
+
+package "BankApp.Data" {
+    class JsonDatabase {
+        +static string GetDatabasePath()
+        +static void EnsureDirectoryExists()
+    }
+
+    class DatabaseManager {
+        +static void BackupDatabase(string backupPath)
+        +static void RestoreDatabase(string backupPath)
+        +static void ClearDatabase()
+        +static DatabaseStats GetDatabaseStats()
+    }
+
+    class DatabaseStats {
+        +int TotalAccounts
+        +int TotalCustomers
+        +int TotalAccountManagers
+        +int TotalTransactions
+        +long DatabaseSize
+        +DateTime LastModified
+    }
+
+    class JsonAccountRepository {
+        -string _filePath
+        --
+        +JsonAccountRepository()
+        +IEnumerable<Account> GetAll()
+        +Account GetByAccountNumber(string accountNumber)
+        +void Add(Account account)
+        +void Update(Account account)
+        +void Delete(string accountNumber)
+        -List<Account> LoadAccounts()
+        -void SaveAccounts(List<Account> accounts)
+    }
+
+    class JsonCustomerRepository {
+        -string _filePath
+        --
+        +JsonCustomerRepository()
+        +IEnumerable<Customer> GetAll()
+        +Customer GetById(string id)
+        +Customer GetByName(string name)
+        +void Add(Customer customer)
+        +void Update(Customer customer)
+        +void Delete(string id)
+        -List<Customer> LoadCustomers()
+        -void SaveCustomers(List<Customer> customers)
+    }
+
+    class JsonTransactionRepository {
+        -string _filePath
+        --
+        +JsonTransactionRepository()
+        +IEnumerable<Transaction> GetAll()
+        +Transaction GetById(string id)
+        +void Add(Transaction transaction)
+        +void Update(Transaction transaction)
+        +void Delete(string id)
+        +IEnumerable<Transaction> GetByAccount(string accountNumber)
+        -List<Transaction> LoadTransactions()
+        -void SaveTransactions(List<Transaction> transactions)
+    }
+
+    class JsonAccountManagerRepository {
+        -string _filePath
+        --
+        +JsonAccountManagerRepository()
+        +IEnumerable<AccountManager> GetAll()
+        +AccountManager GetById(string id)
+        +AccountManager GetAccountManager(string username)
+        +void Add(AccountManager accountManager)
+        +void Update(AccountManager accountManager)
+        +void Delete(string id)
+        -List<AccountManager> LoadAccountManagers()
+        -void SaveAccountManagers(List<AccountManager> accountManagers)
+    }
+}
+
+package "BankApp.CLI" {
+    class Program {
+        -static string _session_customer_id
+        -static string _session_account_manager_id
+        -static AccountService _accountService
+        -static CustomerService _customerService
+        -static TransactionService _transactionService
+        -static AccountManagerService _accountManagerService
+        -static IAccountRepository _accountRepo
+        -static ICustomerRepository _customerRepo
+        -static IAccountManagerRepository _accountManagerRepo
+        --
+        +static void Main(string[] args)
+        -static void InitializeServices()
+        -static void FirstPage()
+        -static void Login(string type)
+        -static void ShowMainMenu()
+        -static void ShowCustomerMenu()
+        -static void ShowAccountMenu()
+        -static void ShowTransactionMenu()
+        -static void ShowDatabaseMenu()
+        -static void ShowAccountManagerMenu()
+        -static void CreateCustomer()
+        -static void CreateAccountManager()
+        -static void CreateAccount()
+        -static void CreateAccountForCustomer()
+        -static void ViewAllAccounts()
+        -static void ViewAccountsByCustomer()
+        -static void DepositMoney()
+        -static void WithdrawMoney()
+        -static void TransferMoney()
+        -static void ViewTransactionHistory()
+        -static void ViewAccountBalance()
+        -static void CreateBackup()
+        -static void RestoreBackup()
+        -static void ClearAllData()
+        -static void ViewDatabaseInfo()
+        -static void ShowStatistics()
+    }
+}
+
+' Relationships
+Account ||--o{ Transaction : "has"
+Customer ||--o{ Account : "owns"
+Customer ||--o{ Complaint : "has"
+AccountManager ||--o{ Account : "manages"
+
+AccountService ..|> IAccountService
+CustomerService ..|> ICustomerService
+TransactionService ..|> ITransactionService
+AccountManagerService ..|> IAccountManagerService
+
+JsonAccountRepository ..|> IAccountRepository
+JsonCustomerRepository ..|> ICustomerRepository
+JsonTransactionRepository ..|> ITransactionRepository
+JsonAccountManagerRepository ..|> IAccountManagerRepository
+
+IAccountRepository --|> IRepository<Account>
+ICustomerRepository --|> IRepository<Customer>
+ITransactionRepository --|> IRepository<Transaction>
+IAccountManagerRepository --|> IRepository<AccountManager>
+
+Program --> AccountService : uses
+Program --> CustomerService : uses
+Program --> TransactionService : uses
+Program --> AccountManagerService : uses
+
+AccountService --> IAccountRepository : depends
+AccountService --> ITransactionRepository : depends
+CustomerService --> ICustomerRepository : depends
+CustomerService --> IAccountRepository : depends
+TransactionService --> IAccountRepository : depends
+TransactionService --> ITransactionRepository : depends
+AccountManagerService --> IAccountManagerRepository : depends
+
+JsonAccountRepository --> JsonDatabase : uses
+JsonCustomerRepository --> JsonDatabase : uses
+JsonTransactionRepository --> JsonDatabase : uses
+JsonAccountManagerRepository --> JsonDatabase : uses
+
+DatabaseManager --> JsonDatabase : manages
+
+@enduml 

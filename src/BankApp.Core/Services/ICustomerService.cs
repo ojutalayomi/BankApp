@@ -1,4 +1,5 @@
 using BankApp.Abstractions;
+using BankApp.Abstractions.Enums;
 
 namespace BankApp.Core.Services;
 
@@ -16,12 +17,13 @@ public interface ICustomerService
     /// Creates a new customer with a default current account.
     /// </summary>
     /// <param name="customer">The customer to create.</param>
+    /// <param name="accountType">The accountType to create.</param>
     /// <remarks>
     /// This method creates a new customer and automatically creates a default
     /// current account for them. The account is linked to the customer and
     /// both are saved to their respective repositories.
     /// </remarks>
-    void CreateCustomer(Customer customer);
+    void CreateCustomer(Customer customer, AccountType? accountType);
     
     /// <summary>
     /// Updates an existing customer's information.

@@ -20,7 +20,7 @@ public interface ICustomerRepository
     /// </summary>
     /// <param name="id">The unique identifier of the customer.</param>
     /// <returns>The customer if found; otherwise, null.</returns>
-    Customer? GetById(string id);
+    Customer? GetCustomerById(string id);
     
     /// <summary>
     /// Retrieves a customer by their username.
