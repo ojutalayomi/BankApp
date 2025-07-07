@@ -1,6 +1,7 @@
+using BankApp.Abstractions;
 using BankApp.Abstractions.Enums;
 
-namespace BankApp.Abstractions;
+namespace BankApp.Core.Utilities;
 
 /// <summary>
 /// Provides static methods for generating account numbers and creating account instances.
@@ -15,11 +16,12 @@ public static class AccountGenerator
     /// The starting account number for new accounts.
     /// </summary>
     private static int _accountNumberCounter = 1000000; // Starting account number
+    private static var _accountNumberCounter_ = new JsonAccountRepository(); // Starting account number
     
     /// <summary>
     /// Lock object for thread-safe account number generation.
     /// </summary>
-    private static readonly object LockObject = new object();
+    private static readonly object LockObject = new();
 
     /// <summary>
     /// Generates a unique account number.
